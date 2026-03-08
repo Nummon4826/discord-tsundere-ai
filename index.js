@@ -1,6 +1,8 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
+console.log("GEMINI KEY =", process.env.GEMINI_API_KEY);
+
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -9,32 +11,35 @@ const client = new Client({
   ]
 });
 
-console.log("GEMINI KEY =", process.env.GEMINI_API_KEY);
-
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const MASTER_NAME = "น้ำมนต์";
 
 let memory = [];
 
-client.once("ready", () => {
+client.once("clientReady", () => {
   console.log("AI Tsundere พร้อมรับใช้แล้ว");
 });
 
 client.on("messageCreate", async (message) => {
 
-console.log("มีข้อความเข้า:", message.content);
-
-if (message.author.bot) return;
-
   if (message.author.bot) return;
+
+  console.log("มีข้อความเข้า:", message.content);
 
   const text = message.content;
 
   try {
 
+    console.log("กำลังเรียก Gemini...");
+
     const model = genAI.getGenerativeModel({
-      model: "gemini-1.5-flash"
+      model: "gemini-1.5-flash",
+      generationConfig: {
+        temperature: 0.9,
+        topP: 1,
+        topK: 40
+      }
     });
 
     memory.push(`${message.author.username}: ${text}`);
@@ -48,19 +53,19 @@ if (message.author.bot) return;
 
 บุคลิก:
 - ซึนเดเระ
-- แกล้งบ่นบ้าง
-- แต่จริงๆรักนายท่าน
+- แกล้งบ่น
+- แต่จริงๆเป็นห่วง
 - เรียกเขาว่า "นายท่านน้ำมนต์"
 
-ความสามารถ:
-- จำบทสนทนา
-- ถ้ามีคนถามว่านายท่านไปไหน ให้ตอบจาก memory
-- คุยเหมือนคนจริง
+กฎการตอบ:
+- อย่าตอบซ้ำ
+- คุยเหมือนมนุษย์
+- ใช้บริบทจากบทสนทนา
 
-บทสนทนาล่าสุด:
+บทสนทนาก่อนหน้า:
 ${memory.join("\n")}
 
-ข้อความใหม่:
+ข้อความล่าสุด:
 ${text}
 `;
 
@@ -68,13 +73,15 @@ ${text}
 
     const reply = result.response.text();
 
-    message.reply(reply);
+    console.log("Gemini ตอบแล้ว");
 
-  } catch (err) {
+    await message.reply(reply);
 
-    console.log(err);
+  } catch (error) {
 
-    message.reply("มะ..ไม่ได้อยากตอบหรอกนะ! แต่ AI ดันงอแงขึ้นมาเฉยเลย!");
+    console.log("Gemini error:", error);
+
+    await message.reply("มะ..ไม่ได้อยากตอบหรอกนะ! แต่ AI ดันงอแงขึ้นมาเฉยเลย!");
 
   }
 
