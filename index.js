@@ -24,7 +24,7 @@ client.on("messageCreate", async (message) => {
   try {
 
     const model = genAI.getGenerativeModel({
-      model: "gemini-3-flash"
+      model: "gemini-pro"
     });
 
     const prompt = `
