@@ -11,28 +11,66 @@ const client = new Client({
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
+const MASTER_NAME = "น้ำมนต์";
+
+let memory = [];
+
 client.once("ready", () => {
-  console.log("Bot online");
+  console.log("AI Tsundere พร้อมรับใช้แล้ว");
 });
 
 client.on("messageCreate", async (message) => {
 
   if (message.author.bot) return;
 
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  const text = message.content;
 
-  const prompt = `
-คุณคือผู้ช่วยสาวซึนเดเระของนายท่าน
-เรียกผู้ใช้ว่านายท่าน
-ตอบแบบซึน ๆ แต่ช่วยเหลือ
+  try {
 
-ข้อความ: ${message.content}
+    const model = genAI.getGenerativeModel({
+      model: "gemini-1.5-flash"
+    });
+
+    memory.push(`${message.author.username}: ${text}`);
+
+    if (memory.length > 10) {
+      memory.shift();
+    }
+
+    const prompt = `
+คุณคือผู้ช่วยสาวซึนเดเระของนายท่านชื่อ "${MASTER_NAME}"
+
+บุคลิก:
+- ซึนเดเระ
+- แกล้งบ่นบ้าง
+- แต่จริงๆรักนายท่าน
+- เรียกเขาว่า "นายท่านน้ำมนต์"
+
+ความสามารถ:
+- จำบทสนทนา
+- ถ้ามีคนถามว่านายท่านไปไหน ให้ตอบจาก memory
+- คุยเหมือนคนจริง
+
+บทสนทนาล่าสุด:
+${memory.join("\n")}
+
+ข้อความใหม่:
+${text}
 `;
 
-  const result = await model.generateContent(prompt);
-  const reply = result.response.text();
+    const result = await model.generateContent(prompt);
 
-  message.reply(reply);
+    const reply = result.response.text();
+
+    message.reply(reply);
+
+  } catch (err) {
+
+    console.log(err);
+
+    message.reply("มะ..ไม่ได้อยากตอบหรอกนะ! แต่ AI ดันงอแงขึ้นมาเฉยเลย!");
+
+  }
 
 });
 
