@@ -1,10 +1,14 @@
 {
-  "name": "discord-tsundere-ai",
+  "name": "discord-ai-bot",
   "version": "1.0.0",
-  "type": "module",
+  "description": "AI Tsundere Bot for Discord",
   "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
   "dependencies": {
-    "discord.js": "^14.14.1",
-    npm install @google/generative-ai
+    "discord.js": "^14.15.3",
+    "@google/generative-ai": "^0.17.0"
   }
 }
