@@ -9,6 +9,8 @@ const client = new Client({
   ]
 });
 
+console.log("GEMINI KEY =", process.env.GEMINI_API_KEY);
+
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 const MASTER_NAME = "น้ำมนต์";
@@ -20,6 +22,10 @@ client.once("ready", () => {
 });
 
 client.on("messageCreate", async (message) => {
+
+console.log("มีข้อความเข้า:", message.content);
+
+if (message.author.bot) return;
 
   if (message.author.bot) return;
 
