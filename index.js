@@ -1,89 +1,41 @@
-const { Client, GatewayIntentBits } = require("discord.js");
-const OpenAI = require("openai");
+import discord
+import os
+import google.generativeai as genai
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildVoiceStates
-  ]
-});
+TOKEN = os.getenv("DISCORD_TOKEN")
+GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_KEY
-});
+genai.configure(api_key=GEMINI_KEY)
 
-const masters = ["nummonrapeewit", "nummon4826"];
+model = genai.GenerativeModel("gemini-1.5-flash")
 
-client.on("ready", () => {
-  console.log("Bot online!");
-});
+intents = discord.Intents.default()
+intents.message_content = True
 
-client.on("messageCreate", async (message) => {
+client = discord.Client(intents=intents)
 
-  if (message.author.bot) return;
+MASTER_IDS = ["nummonrapeewit", "nummon4826"]
 
-  const isMaster = masters.includes(message.author.username);
+@client.event
+async def on_ready():
+    print("Bot online")
 
-  // 👑 คำสั่งนายท่าน
+@client.event
+async def on_message(message):
 
-  if (isMaster && message.content === "!kickall") {
+    if message.author == client.user:
+        return
 
-    const vc = message.member.voice.channel;
+    prompt = f"""
+    คุณเป็นผู้ช่วยสาวซึนเดเระของนายท่าน
+    เรียกผู้ใช้ว่า "นายท่าน"
+    ตอบแบบกวน ๆ นิด ๆ แต่ช่วยเหลือ
 
-    if (!vc) {
-      return message.reply("นายท่านต้องอยู่ในห้องเสียงก่อนสิ... ไม่ได้โง่นะ!");
-    }
+    ข้อความ: {message.content}
+    """
 
-    vc.members.forEach(member => {
-      if (!member.user.bot) {
-        member.voice.disconnect();
-      }
-    });
+    response = model.generate_content(prompt)
 
-    return message.reply("ก็ได้ ๆ ข้าเตะทุกคนออกจากห้องให้แล้วนะ นายท่าน!");
-  }
+    await message.channel.send(response.text)
 
-  if (isMaster && message.content.startsWith("!kick ")) {
-
-    const member = message.mentions.members.first();
-
-    if (!member) return message.reply("นายท่านต้องแท็กคนก่อนสิ!");
-
-    member.voice.disconnect();
-
-    return message.reply("ข้าเตะเขาออกไปแล้ว... ไม่ได้ทำเพราะห่วงนายท่านหรอกนะ!");
-  }
-
-  // 🤖 AI Chat
-
-  try {
-
-    const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
-      messages: [
-        {
-          role: "system",
-          content:
-            "คุณคือผู้ช่วยสาวซึนเดเระใน Discord คุณเรียกเจ้าของว่า นายท่าน และพูดกวน ๆ ขี้งอนนิด ๆ แต่ก็ช่วยเหลือ"
-        },
-        {
-          role: "user",
-          content: message.content
-        }
-      ]
-    });
-
-    message.reply(response.choices[0].message.content);
-
-  } catch (err) {
-
-    console.log(err);
-    message.reply("ข้าไม่ว่างตอนนี้หรอกนะ!");
-
-  }
-
-});
-
-client.login(process.env.TOKEN);
+client.run(TOKEN)
