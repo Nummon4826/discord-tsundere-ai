@@ -6,7 +6,7 @@ import os
 import brain # นำเข้าไฟล์สมองที่เราจะให้มันเรียนรู้
 
 # --- ตั้งค่าเริ่มต้น ---
-TOKEN = 'OTQzNDIxOTIzMjIyNzY5NzA1.GfYFyA.HoaHv7z2LU22mXET3o-Z-G9meGeSA7J7_Opf_o'
+TOKEN = os.getenv('DISCORD_TOKEN')
 MASTER_ID = 841691286125019186
 
 intents = discord.Intents.all()
