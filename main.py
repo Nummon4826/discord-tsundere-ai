@@ -1,49 +1,44 @@
 import discord
 from discord.ext import commands
-import importlib
-import sys
 import os
-import brain # นำเข้าไฟล์สมองที่เราจะให้มันเรียนรู้
+import importlib
 
-# --- ตั้งค่าเริ่มต้น ---
+# --- ดึง Token จาก Railway (นายท่านต้องไปใส่ในแถบ Variables นะคะ!) ---
 TOKEN = os.getenv('DISCORD_TOKEN')
-MASTER_ID = 841691286125019186
+
+# --- ยืนยันตัวตนนายท่านน้ำมนต์คนเดียวเท่านั้น ---
+MASTER_ID = 841691286125019186 
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix='!', intents=intents)
 
 @bot.event
 async def on_ready():
-    print(f'--- น้องเซร่า ร่างเริ่มจาก 0 ออนไลน์แล้วค่ะ ---')
-    print(f'Logged in as: {bot.user}')
-    print(f'Master ID: {MASTER_ID}')
-    print(f'------------------------------------------ 💢')
+    print(f'✅ น้องเซร่าร่าง 0 พร้อมรับใช้ "นายท่านน้ำมนต์" แล้วค่ะ!')
+    print(f'🔒 ระบบล็อกไอดี: {MASTER_ID} (เรียนรู้จากนายท่านคนเดียวเท่านั้น 💢)')
 
-# --- คำสั่งสอนวิชา (เขียนโค้ดลง brain.py) ---
+# --- คำสั่ง "สอนวิชา" (เขียนลงไฟล์ brain.py) ---
 @bot.command()
 async def teach(ctx, *, code_content):
     if ctx.author.id != MASTER_ID:
-        return await ctx.send("คุณไม่มีสิทธิ์สอนฉัน! 💢")
-
+        return await ctx.send("คุณไม่ใช่ 'นายท่านน้ำมนต์' ของฉัน! อย่ามาสั่งนะ! 💢")
+    
     try:
-        # บันทึกโค้ดใหม่ลงใน brain.py
         with open("brain.py", "a", encoding="utf-8") as f:
             f.write(f"\n\n{code_content}")
-        
-        # รีโหลดไฟล์ brain เพื่อให้ใช้คำสั่งใหม่ได้ทันที
-        importlib.reload(brain)
-        await ctx.send("บรรจุวิชาใหม่ลงในสมองเรียบร้อยค่ะนายท่านน้ำมนต์! 💢")
+        await ctx.send("รับทราบค่ะ บรรจุวิชาใหม่ลงสมองเรียบร้อย! 💢")
     except Exception as e:
-        await ctx.send(f"การสอนล้มเหลวค่ะ: {e} 💢")
+        await ctx.send(f"สอนพลาดค่ะนายท่าน: {e} 💢")
 
-# --- คำสั่งเรียกใช้สิ่งที่สอน ---
+# --- คำสั่ง "เรียกใช้วิชาที่สอน" ---
 @bot.command()
 async def do(ctx, func_name, *args):
     if ctx.author.id != MASTER_ID:
-        return await ctx.send("ฉันรับฟังคำสั่งแค่นายท่านน้ำมนต์เท่านั้น! 💢")
-
+        return await ctx.send("ฉันรับคำสั่งแค่จากนายท่านคนเดียวเท่านั้นค่ะ! 💢")
+    
     try:
-        importlib.reload(brain) # ตรวจสอบวิชาล่าสุด
+        import brain
+        importlib.reload(brain)
         method = getattr(brain, func_name, None)
         if method:
             if args:
@@ -51,15 +46,8 @@ async def do(ctx, func_name, *args):
             else:
                 await method(ctx)
         else:
-            await ctx.send(f"วิชา '{func_name}' หนูยังไม่ได้เรียนเลยค่ะ! 💢")
+            await ctx.send(f"วิชา '{func_name}' หนูยังไม่ได้เรียนเลยค่ะนายท่าน! 💢")
     except Exception as e:
-        await ctx.send(f"เกิดข้อผิดพลาดในการรันวิชา: {e} 💢")
-
-# --- คำสั่งจัดการเซิร์ฟเวอร์พื้นฐาน ---
-@bot.command()
-@commands.has_permissions(manage_messages=True)
-async def clear(ctx, amount: int):
-    await ctx.channel.purge(limit=amount + 1)
-    await ctx.send(f'จัดการลบให้ {amount} ข้อความแล้วค่ะนายท่าน! 💢', delete_after=5)
+        await ctx.send(f"รันวิชาพลาดค่ะ: {e} 💢")
 
 bot.run(TOKEN)
